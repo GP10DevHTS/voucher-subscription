@@ -1,5 +1,7 @@
 <?php
 
+use App\Livewire\Packages\PackageManagerComponent;
+use App\Livewire\Vouchers\VoucherManager;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', function () {
@@ -16,4 +18,7 @@ Route::middleware([
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
+
+    Route::get('/package-manager', PackageManagerComponent::class)->name('package-manager');
+    Route::get('/voucher-manager', VoucherManager::class)->name('voucher-manager');
 });
