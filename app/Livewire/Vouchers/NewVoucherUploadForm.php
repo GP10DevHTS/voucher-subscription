@@ -2,9 +2,11 @@
 
 namespace App\Livewire\Vouchers;
 
+use App\Imports\VoucherUpload;
 use App\Models\Package;
 use Livewire\Component;
 use Livewire\Features\SupportFileUploads\WithFileUploads;
+use Maatwebsite\Excel\Facades\Excel;
 
 class NewVoucherUploadForm extends Component
 {
@@ -32,6 +34,11 @@ class NewVoucherUploadForm extends Component
             'voucherFile' => 'required|mimes:csv,xls,xlsx',
             'package'  => 'required|exists:packages,slug',
         ]);
+
+        Excel::import(new VoucherUpload($this->package), $this->voucherFile);
+
+        $this->dispatch('uploaded-vouchers');
+        $this->reset(['voucherFile', 'package']);
     }
 
     public function render()

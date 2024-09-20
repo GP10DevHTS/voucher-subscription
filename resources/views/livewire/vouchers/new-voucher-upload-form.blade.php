@@ -21,11 +21,7 @@
                     <div class="col-span-6">
                         <x-validation-errors class="mb-4" />
                     </div>
-                    <div class="col-span-6">
-                        <x-label for="voucherFile" value="{{ __('File') }}" />
-                        <x-input id="voucherFile" type="file" accept="text/csv,application/xlsx,application/xls" class="mt-1 block w-full" wire:model.defer="voucherFile" />
-                        <x-input-error for="voucherFile" class="mt-2" />
-                    </div>
+                    
 
                     <div class="col-span-6">
                         <x-label for="package" value="{{ __('Package') }}" />
@@ -40,6 +36,12 @@
                         <x-input-error for="package" class="mt-2" />
                     </div>
 
+                    <div class="col-span-6">
+                        <x-label for="voucherFile" value="{{ __('File') }}" />
+                        <x-input id="voucherFile" type="file" accept="text/csv,application/xlsx,application/xls" class="mt-1 block w-full" wire:model.defer="voucherFile" />
+                        <x-input-error for="voucherFile" class="mt-2" />
+                    </div>
+
                 </x-slot>
 
             </x-form-section>
@@ -47,8 +49,12 @@
 
         <x-slot name="footer">
             @if ($voucherFile)
-                <span class="text-sm text-gray-600 dark:text-gray-400">File ready to upload</span>
+                <span class="text-sm text-gray-600 mr-3 dark:text-gray-400">File ready to upload</span>
             @endif
+
+            <x-action-message on="uploaded-vouchers" class="mr-3">
+                {{ __('Saved.') }}
+            </x-action-message>
 
             <x-secondary-button class="mr-3" wire:click="closeUploadModal" wire:loading.attr="disabled">
                 {{ __('Cancel') }}
