@@ -23,6 +23,8 @@ class WelcomePage extends Component
     public $email;
     public $phone;
 
+    public $red_url;
+
 
     public function render()
     {
@@ -98,7 +100,7 @@ class WelcomePage extends Component
                         $ipnData = json_decode($ipnResponse->getBody(), true);
                         // save the ipn_id
 
-                        dd($ipnData);
+                        // dd($ipnData);
 
                         $customer->ipn_id = $ipnData['ipn_id'];
                         $customer->save();
@@ -130,9 +132,9 @@ class WelcomePage extends Component
                             $customer->order_tracking_id = $orderData['order_tracking_id'];
                             $customer->save();
 
-                            dd( $orderData)
+                            // dd( $orderData);
 
-
+                            $this->red_url = $orderData['redirect_url'];
 
 
 

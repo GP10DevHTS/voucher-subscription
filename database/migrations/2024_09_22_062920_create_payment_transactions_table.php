@@ -18,7 +18,7 @@ return new class extends Migration
             $table->string('phone')->comment('phone of client');
             $table->foreignId('package_id')->constrained();
             $table->string('status')->comment('status of transaction')->default('pending');
-            $table->string('uuid')->comment('transaction uuid');
+            $table->string('uuid')->comment('transaction uuid')->nullable();
             $table->foreignId('voucher_id')->nullable()->constrained();
             $table->string('ipn_id')->nullable()->comment('ipn id'); // from pesapal
             $table->string('order_tracking_id')->nullable()->comment('url for callback'); // from pesapal
