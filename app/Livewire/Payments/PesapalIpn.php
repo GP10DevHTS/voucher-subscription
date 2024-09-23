@@ -99,7 +99,6 @@ use Livewire\Component;
 #[Layout('layouts.guest')]
 class PesapalIpn extends Component
 {
-
     public $transaction;
 
     public function mount(Request $request)
@@ -126,9 +125,6 @@ class PesapalIpn extends Component
             if ($response->getStatusCode() === 200) {
                 $data = json_decode($response->getBody(), true);
 
-                // Debug the authentication response data
-                // dd($data); // exists
-
                 if ($data['status'] == 200) {
                     $token = $data['token'];
 
@@ -136,8 +132,6 @@ class PesapalIpn extends Component
                     if ($request->has('OrderTrackingId')) {
                         $orderTrackingId = $request->OrderTrackingId;
                     } else {
-                        // Debug in case OrderTrackingId is missing
-                        // dd('OrderTrackingId is missing in the request.');
                         session()->flash('error', 'OrderTrackingId is missing in the request.');
                         return;
                     }
@@ -154,42 +148,52 @@ class PesapalIpn extends Component
                         ],
                     ]);
 
-                    // Debug the order status response
-                    // dd($orderStatusResponse);
-
                     if ($orderStatusResponse->getStatusCode() === 200) {
                         $orderStatusData = json_decode($orderStatusResponse->getBody(), true);
 
-                        // Debug the final order status data
-                        // dd($orderStatusData);
-
                         if ($orderStatusData['status'] == 200) {
-                           
-                            $this->transaction = PaymentTransaction::where('order_tracking_id', $request->OrderTrackingId)->firstOrFail();
+                            // Fetch the transaction
+                            $this->transaction = PaymentTransaction::where('order_tracking_id', $orderTrackingId)->first();
 
-                                                       
-                           
-                            session()->flash('success', 'Payment Successful. Thank you for your patronage.');
-                            // session()->flash('success', 'Payment Successful. Thank you for your patronage.\n Your Voucher code: ' . $this->transaction->voucher->name);
+                            // Check if the transaction is already marked as completed
+                            if ($this->transaction && $this->transaction->status !== 'completed') {
+                                // Update the transaction details
+                                $this->transaction->update([
+                                    'status' => 'completed',
+                                    'payment_method' => $orderStatusData['payment_method'],
+                                    'amount' => $orderStatusData['amount'],
+                                    'currency' => $orderStatusData['currency'],
+                                    'confirmation_code' => $orderStatusData['confirmation_code'],
+                                    'paid_at' => $orderStatusData['created_date'],
+                                    'payment_account' => $orderStatusData['payment_account'],
+                                ]);
 
-                            
+                                // Optional: fetch voucher and attach to the transaction
+                                $voucher = $this->transaction->package->vouchers()->where('is_sold', false)->inRandomOrder()->first();
+                                if ($voucher) {
+                                    $this->transaction->update(['voucher_id' => $voucher->id]);
+                                    $voucher->update(['is_sold' => true]);
+                                }
 
+                                session()->flash('success', 'Payment Successful. Thank you for your patronage.');
+                                session()->flash('success', 'Your Voucher code: ' . ($voucher ? $voucher->name : 'N/A'));
+                            } else {
+                                session()->flash('success', 'Transaction already completed.');
+                            }
                         } else {
                             session()->flash('error', 'Payment failed or is still processing.');
                         }
                     } else {
-                        session()->flash('error', 'Failed to fetch order status from Pesapal. 3');
+                        session()->flash('error', 'Failed to fetch order status from Pesapal.');
                     }
                 } else {
-                    session()->flash('error', 'Failed to authenticate with Pesapal. 2');
+                    session()->flash('error', 'Failed to authenticate with Pesapal.');
                 }
             } else {
-                session()->flash('error', 'Failed to authenticate with Pesapal. 1');
+                session()->flash('error', 'Failed to authenticate with Pesapal.');
             }
         } catch (RequestException $e) {
-            // Handle and debug exceptions properly
             session()->flash('error', 'Error: ' . $e->getMessage());
-            // dd($e->getMessage());
         }
     }
 

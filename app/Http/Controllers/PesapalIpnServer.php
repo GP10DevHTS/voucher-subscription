@@ -117,7 +117,6 @@
 // }
 
 
-
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
@@ -162,7 +161,7 @@ class PesapalIpnServer extends Controller
                         ]);
                     }
 
-                    // Get the order status
+                    // Get the order status from Pesapal
                     $orderStatusResponse = $client->get('https://pay.pesapal.com/v3/api/Transactions/GetTransactionStatus', [
                         'headers' => [
                             'Authorization' => 'Bearer ' . $token,
@@ -178,10 +177,18 @@ class PesapalIpnServer extends Controller
                         $orderStatusData = json_decode($orderStatusResponse->getBody(), true);
 
                         if ($orderStatusData['status'] == 200) {
-                            // Fetch transaction from the DB
-                            $transaction = PaymentTransaction::where('order_tracking_id', $orderTrackingId)->firstOrFail();
+                            // Fetch the transaction from the DB
+                            $transaction = PaymentTransaction::where('order_tracking_id', $orderTrackingId)->first();
 
-                            // Get a random voucher with the same package as the transaction
+                            // Check if the transaction is already marked as completed
+                            if ($transaction && $transaction->status === 'completed') {
+                                return response()->json([
+                                    'status' => 200,
+                                    'message' => 'Transaction already completed.',
+                                ]);
+                            }
+
+                            // If not already completed, proceed with the update
                             $voucher = $transaction->package->vouchers()->where('is_sold', false)->inRandomOrder()->first();
 
                             if ($voucher) {
@@ -248,4 +255,3 @@ class PesapalIpnServer extends Controller
         }
     }
 }
-
