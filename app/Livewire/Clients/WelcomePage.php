@@ -89,7 +89,7 @@ class WelcomePage extends Component
                             'Content-Type' => 'application/json',
                         ],
                         'json' => [
-                            'url' => route('voucher-payment'), // The route for your IPN notification
+                            'url' => route('voucher-payment-ipn'), // The route for your IPN notification
                             'ipn_notification_type' => 'POST', // or 'GET', depending on your setup
                         ],
                     ]);

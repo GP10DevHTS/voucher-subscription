@@ -19,6 +19,14 @@ class PaymentTransaction extends Model
         'status',
         'uuid',
         'ipn_id',
+        'voucher_id',
+        'order_tracking_id',
+        'payment_method',
+        'amount',
+        'currency',
+        'confirmation_code',
+        'paid_at',
+        'payment_account',
     ];
 
     protected static function booted()
@@ -27,5 +35,15 @@ class PaymentTransaction extends Model
             $model->uuid = Str::uuid();
             $model->save();
         });
+    }
+
+    public function package()
+    {
+        return $this->belongsTo(Package::class, 'package_id');
+    }
+
+    public function voucher()
+    {
+        return $this->belongsTo(Voucher::class, 'voucher_id');
     }
 }
